@@ -55,3 +55,9 @@ class PageSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PageSection
         fields = '__all__'
+
+### User Login Serailzier.
+class UserLoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'password']

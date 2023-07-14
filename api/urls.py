@@ -21,6 +21,7 @@ urlpatterns = [
     path('store_user/', store_user, name='store_user'),
     path('store_vendor/', store_vendor, name='store_vendor'),
     path('store_lead/', store_lead, name='store_lead'),
+    path('api/v1/login/', LoginAPIView.as_view(), name='login'),
    
     
 ]

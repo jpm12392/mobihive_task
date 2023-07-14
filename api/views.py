@@ -5,6 +5,7 @@ from rest_framework import generics, status, permissions, viewsets
 from rest_framework.parsers import FormParser, MultiPartParser
 from mhlabs.paginations import MVPPagination
 from .serializers import *
+from mhlabs.jwt_tokens import generate_access_token, generate_refresh_token
 
 # Create your views here.
 
@@ -84,3 +85,37 @@ class PageSectionViewSets(viewsets.ModelViewSet):
     pagination_class = MVPPagination
     filter_backends = [filters.SearchFilter]
     search_fields = ['title',]
+
+## generate a login token.
+class LoginAPIView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = UserLoginSerializer
+
+    def post(self, request):
+        try:
+            email = request.data.get('email')
+            password = request.data.get('password')
+            response = Response()
+
+            if (email is None) or (password is None):
+                context = {'status': False,'message': 'Incorrect login credentials. Please try again'}
+                return Response(context, status=status.HTTP_200_OK)
+
+            user = User.objects.filter(email=email).first()
+
+            if(user is None):
+                context = {'status': False,'message': 'Email address incorrect.'}
+                return Response(context, status=status.HTTP_200_OK)
+
+            if (not user.check_password(password)):
+                context = {'status': False,'message': 'Wrong password'}
+                return Response(context, status=status.HTTP_200_OK)
+            
+            access_token = generate_access_token(user.id)
+            refresh_token = generate_refresh_token(user.id)
+            response.data = {'status': True, 'massage': 'Login Successfully',"access_token": access_token,"refresh_token": refresh_token,}
+            return response
+
+        except Exception as e:
+            context = {'status': False, 'message': 'Something Went Wrong'}
+            return Response(context, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
